@@ -1,4 +1,6 @@
-export const PORTRAIT_URL = '/images/portrait-bong.png'
+import { asset } from '../lib/asset'
+
+export const PORTRAIT_URL = asset('images/portrait-bong.png')
 
 export const MARQUEE_IMAGES = [
   'https://motionsites.ai/assets/hero-space-voyage-preview-eECLH3Yc.gif',
@@ -83,9 +85,9 @@ export const profile = {
       name: '中海总部大厦可视化',
       category: 'Client',
       images: {
-        col1Top: '/images/project-zhonghai-hq.jpg',
-        col1Bottom: '/images/project-zhonghai-hq.jpg',
-        col2: '/images/project-zhonghai-hq.jpg',
+        col1Top: asset('images/project-zhonghai-hq.jpg'),
+        col1Bottom: asset('images/project-zhonghai-hq.jpg'),
+        col2: asset('images/project-zhonghai-hq.jpg'),
       },
       link: '#projects',
     },
@@ -94,9 +96,9 @@ export const profile = {
       name: '中海楼宇工程数字化',
       category: 'Client',
       images: {
-        col1Top: '/images/project-zhonghai-building.svg',
-        col1Bottom: '/images/project-zhonghai-hq.jpg',
-        col2: '/images/project-zhonghai-building.svg',
+        col1Top: asset('images/project-zhonghai-building.svg'),
+        col1Bottom: asset('images/project-zhonghai-hq.jpg'),
+        col2: asset('images/project-zhonghai-building.svg'),
       },
       link: '#projects',
     },
@@ -105,9 +107,9 @@ export const profile = {
       name: 'SaaS CRM 平台项目群',
       category: 'Enterprise',
       images: {
-        col1Top: '/images/project-saas-crm.svg',
-        col1Bottom: '/images/project-ka.svg',
-        col2: '/images/project-saas-crm.svg',
+        col1Top: asset('images/project-saas-crm.svg'),
+        col1Bottom: asset('images/project-ka.svg'),
+        col2: asset('images/project-saas-crm.svg'),
       },
       link: '#projects',
     },
