@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Mail, Phone, X } from 'lucide-react'
+import { Mail, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useCopyFeedback } from '../../hooks/useCopyFeedback'
 import { PORTRAIT_URL, profile } from '../../data/profile'
@@ -101,15 +101,6 @@ export default function ContactCardModal({ open, onClose }: ContactCardModalProp
                   >
                     <Mail className="h-4 w-4 shrink-0 text-[#FF9FFC]" />
                     <span className="break-all">{profile.contact.email}</span>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href={`tel:${profile.contact.phone}`}
-                    className="flex items-center gap-3 rounded-xl border border-mist/10 bg-white/[0.03] px-4 py-3 text-sm text-mist transition-colors hover:border-mist/25 hover:bg-white/[0.06]"
-                  >
-                    <Phone className="h-4 w-4 shrink-0 text-[#B497CF]" />
-                    <span>{profile.contact.phone}</span>
                   </a>
                 </li>
                 <li>

@@ -4,9 +4,10 @@ import PortraitElectricOutline from './PortraitElectricOutline'
 type HeroPortraitProps = {
   src: string
   alt: string
+  className?: string
 }
 
-export default function HeroPortrait({ src, alt }: HeroPortraitProps) {
+export default function HeroPortrait({ src, alt, className }: HeroPortraitProps) {
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function HeroPortrait({ src, alt }: HeroPortraitProps) {
   }, [src])
 
   return (
-    <div className="hero-portrait relative">
+    <div className={`relative ${className ?? 'hero-portrait'}`}>
       <img
         src={src}
         alt={alt}

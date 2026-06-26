@@ -1,4 +1,4 @@
-import { Mail, Phone } from 'lucide-react'
+import { Mail } from 'lucide-react'
 import { profile } from '../../data/profile'
 import { useCopyFeedback } from '../../hooks/useCopyFeedback'
 import ContactButton from '../ui/ContactButton'
@@ -13,7 +13,7 @@ export default function ContactFooter() {
   return (
     <footer
       id="contact"
-      className="mt-24 border-t border-mist/10 pt-16 text-center"
+      className="border-t border-mist/10 px-4 pb-16 pt-12 text-center sm:px-0 sm:pb-20 sm:pt-16"
     >
       <p className="mb-2 text-sm uppercase tracking-widest text-mist/50">
         {profile.displayName} · {profile.title}
@@ -29,11 +29,6 @@ export default function ContactFooter() {
           <WeChatIcon className="h-4 w-4 text-[#07C160]" />
           <span>{copied ? '复制成功' : profile.contact.wechat}</span>
         </button>
-
-        <a href={`tel:${profile.contact.phone}`} className={itemClass}>
-          <Phone className="h-4 w-4 text-[#B497CF]" />
-          <span>{profile.contact.phone}</span>
-        </a>
 
         <a href={`mailto:${profile.contact.email}`} className={itemClass}>
           <Mail className="h-4 w-4 text-[#FF9FFC]" />

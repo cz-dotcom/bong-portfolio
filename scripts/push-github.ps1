@@ -45,11 +45,22 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 git remote set-url origin $remote
+$prevEap = $ErrorActionPreference
+$ErrorActionPreference = 'SilentlyContinue'
 git fetch origin 2>&1 | Out-Null
+$ErrorActionPreference = $prevEap
+if ($LASTEXITCODE -ne 0) {
+  Write-Host ''
+  Write-Host 'Note: push succeeded but fetch failed (network). Remote is still updated.'
+}
 git branch --set-upstream-to=origin/main main 2>&1 | Out-Null
 
 # Clear clipboard token (optional safety)
-Set-Clipboard -Value ''
+try {
+  Set-Clipboard -Value ' '
+} catch {
+  # Some PowerShell versions reject empty clipboard values
+}
 
 Write-Host ''
 Write-Host 'Success! https://github.com/CZ-dotcom/bong-portfolio'
