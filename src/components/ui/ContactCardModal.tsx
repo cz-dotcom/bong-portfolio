@@ -3,6 +3,7 @@ import { Mail, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useCopyFeedback } from '../../hooks/useCopyFeedback'
 import { PORTRAIT_URL, profile } from '../../data/profile'
+import { CURRENT_COMPANY } from '../../data/companies'
 import WeChatIcon from './WeChatIcon'
 
 type ContactCardModalProps = {
@@ -90,10 +91,18 @@ export default function ContactCardModal({ open, onClose }: ContactCardModalProp
               >
                 {profile.displayName}
               </h2>
-              <p className="mt-1 text-sm text-mist/60">{profile.title}</p>
               <p className="mt-1 text-xs text-mist/40">{profile.contact.location}</p>
 
-              <ul className="mt-6 space-y-3 text-left">
+              <div className="mt-4 flex flex-col items-center gap-1.5 rounded-xl border border-mist/10 bg-white/[0.03] px-4 py-3">
+                <img
+                  src={CURRENT_COMPANY.logo}
+                  alt={CURRENT_COMPANY.name}
+                  className="h-5 w-auto max-w-[7.5rem] object-contain"
+                />
+                <p className="text-xs text-mist/65">翠鸟智擎 项目经理</p>
+              </div>
+
+              <ul className="mt-5 space-y-3 text-left">
                 <li>
                   <a
                     href={`mailto:${profile.contact.email}`}
