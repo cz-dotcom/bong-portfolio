@@ -1,5 +1,7 @@
 import ContactButton from '../ui/ContactButton'
+import CompanyLogos from '../ui/CompanyLogos'
 import FadeIn from '../ui/FadeIn'
+import HeroPortrait from '../ui/HeroPortrait'
 import LiquidEther from '../ui/LiquidEther'
 import SplitText from '../ui/SplitText'
 import TextType from '../ui/TextType'
@@ -89,17 +91,21 @@ export default function HeroSection() {
       </FadeIn>
 
       <div className="relative z-20 mt-auto px-6 pb-7 sm:px-8 sm:pb-8 md:px-10 md:pb-10">
-        <div className="relative z-20 flex items-end justify-between gap-4">
-          <div className="max-w-[160px] shrink-0 sm:max-w-[240px] md:max-w-[300px]">
+        <div className="relative z-20 grid w-full grid-cols-[1fr_auto] items-end gap-4">
+          <div className="min-w-0 self-end">
             <SplitText
               text={profile.heroTagline}
               tag="p"
-              className="font-light uppercase leading-snug tracking-wide text-mist"
-              style={{ fontSize: 'clamp(0.75rem, 1.4vw, 1.5rem)' }}
+              className="hero-tagline font-light uppercase tracking-wide text-mist"
+              style={{
+                fontSize: 'clamp(0.75rem, 1.4vw, 1.5rem)',
+                lineHeight: 1.35,
+                whiteSpace: 'pre-line',
+              }}
               delay={50}
               duration={1.25}
               ease="power3.out"
-              splitType="chars"
+              splitType="lines, chars"
               from={{ opacity: 0, y: 40 }}
               to={{ opacity: 1, y: 0 }}
               threshold={0.1}
@@ -107,23 +113,19 @@ export default function HeroSection() {
               textAlign="left"
               immediate
             />
+            <FadeIn onMount delay={0.65} y={12}>
+              <CompanyLogos />
+            </FadeIn>
           </div>
 
-          <FadeIn onMount delay={0.5} y={20} className="shrink-0">
-            <ContactButton label="联系我" href={`mailto:${profile.contact.email}`} />
+          <FadeIn onMount delay={0.5} y={0} className="shrink-0 self-end">
+            <ContactButton label="联系我" />
           </FadeIn>
         </div>
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex translate-y-[6%] justify-center">
-        <FadeIn onMount delay={0.6} y={20} className="hero-portrait">
-          <img
-            src={PORTRAIT_URL}
-            alt={profile.fullName}
-            className="block w-full select-none object-contain object-bottom"
-            draggable={false}
-          />
-        </FadeIn>
+        <HeroPortrait src={PORTRAIT_URL} alt={profile.displayName} />
       </div>
     </section>
   )

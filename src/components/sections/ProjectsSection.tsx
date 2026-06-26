@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import LiveProjectButton from '../ui/LiveProjectButton'
+import ContactFooter from './ContactFooter'
 import { profile } from '../../data/profile'
 
 type ProjectCardProps = {
@@ -102,24 +103,7 @@ export default function ProjectsSection() {
         ))}
       </div>
 
-      <footer
-        id="contact"
-        className="mt-24 border-t border-mist/10 pt-16 text-center text-mist/50"
-      >
-        <p className="mb-2 text-sm uppercase tracking-widest">
-          {profile.fullName} · {profile.title}
-        </p>
-        <p className="text-sm">
-          <a href={`mailto:${profile.contact.email}`} className="hover:text-mist">
-            {profile.contact.email}
-          </a>
-          {' · '}
-          <a href={`tel:${profile.contact.phone}`} className="hover:text-mist">
-            {profile.contact.phone}
-          </a>
-        </p>
-        <p className="mt-2 text-sm">{profile.contact.location}</p>
-      </footer>
+      <ContactFooter />
     </section>
   )
 }

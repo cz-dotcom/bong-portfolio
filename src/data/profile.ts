@@ -1,30 +1,91 @@
 import { asset } from '../lib/asset'
 
-export const PORTRAIT_URL = asset('images/portrait-bong.png')
+export const PORTRAIT_URL = asset('images/portrait-bong.webp')
 
-export const MARQUEE_IMAGES = [
-  'https://motionsites.ai/assets/hero-space-voyage-preview-eECLH3Yc.gif',
-  'https://motionsites.ai/assets/hero-codenest-preview-Cgppc2qV.gif',
-  'https://motionsites.ai/assets/hero-vex-ventures-preview-BczMFIiw.gif',
-  'https://motionsites.ai/assets/hero-stellar-ai-v2-preview-DjvxjG3C.gif',
-  'https://motionsites.ai/assets/hero-asme-preview-B_nGDnTP.gif',
-  'https://motionsites.ai/assets/hero-transform-data-preview-Cx5OU29N.gif',
-  'https://motionsites.ai/assets/hero-vitara-preview-Cjz2QYyU.gif',
-  'https://motionsites.ai/assets/hero-terra-preview-BFjrCr7T.gif',
-  'https://motionsites.ai/assets/hero-skyelite-preview-DHaZIgUv.gif',
-  'https://motionsites.ai/assets/hero-aethera-preview-DknSlcTa.gif',
-  'https://motionsites.ai/assets/hero-designpro-preview-D8c5_een.gif',
-  'https://motionsites.ai/assets/hero-stellar-ai-preview-D3HL6bw1.gif',
-  'https://motionsites.ai/assets/hero-xportfolio-preview-D4A8maiC.gif',
-  'https://motionsites.ai/assets/hero-orbit-web3-preview-BXt4OttD.gif',
-  'https://motionsites.ai/assets/hero-nexora-preview-cx5HmUgo.gif',
-  'https://motionsites.ai/assets/hero-evr-ventures-preview-DZxeVFEX.gif',
-  'https://motionsites.ai/assets/hero-planet-orbit-preview-DWAP8Z1P.gif',
-  'https://motionsites.ai/assets/hero-new-era-preview-CocuDUm9.gif',
-  'https://motionsites.ai/assets/hero-wealth-preview-B70idl_u.gif',
-  'https://motionsites.ai/assets/hero-luminex-preview-CxOP7ce6.gif',
-  'https://motionsites.ai/assets/hero-celestia-preview-0yO3jXO8.gif',
+const MARQUEE_MEDIA_NAMES = [
+  'hero-aethera-preview-DknSlcTa.webp',
+  'hero-asme-preview-B_nGDnTP.webp',
+  'hero-celestia-preview-0yO3jXO8.webp',
+  'hero-codenest-preview-Cgppc2qV.webp',
+  'hero-designpro-preview-D8c5_een.webp',
+  'hero-evr-ventures-preview-DZxeVFEX.webp',
+  'hero-luminex-preview-CxOP7ce6.webp',
+  'hero-new-era-preview-CocuDUm9.webp',
+  'hero-nexora-preview-cx5HmUgo.webp',
+  'hero-orbit-web3-preview-BXt4OttD.webp',
+  'hero-planet-orbit-preview-DWAP8Z1P.webp',
+  'hero-skyelite-preview-DHaZIgUv.webp',
+  'hero-space-voyage-preview-eECLH3Yc.webp',
+  'hero-stellar-ai-preview-D3HL6bw1.webp',
+  'hero-stellar-ai-v2-preview-DjvxjG3C.webp',
+  'hero-terra-preview-BFjrCr7T.webp',
+  'hero-transform-data-preview-Cx5OU29N.webp',
+  'hero-vex-ventures-preview-BczMFIiw.webp',
+  'hero-vitara-preview-Cjz2QYyU.webp',
+  'hero-wealth-preview-B70idl_u.webp',
+  'hero-xportfolio-preview-D4A8maiC.webp',
+] as const
+
+export const MARQUEE_IMAGES = MARQUEE_MEDIA_NAMES.map((name) =>
+  asset(`images/marquee/${name}`),
+)
+
+/** Marquee 每张图的图例说明，与 MARQUEE_IMAGES 顺序一一对应 */
+export const MARQUEE_CAPTIONS: string[] = [
+  '工地监管可视化',
+  '仓储物流案例',
+  '影视场景模仿',
+  '物业运营管理',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
 ]
+
+const MARQUEE_VIDEO_FILES: Partial<
+  Record<number, { file: string; preload?: 'auto' | 'metadata' | 'none' }>
+> = {
+  0: { file: 'images/marquee/bong-marquee-intro.mp4', preload: 'auto' },
+  1: { file: 'images/marquee/bong-marquee-logistics.mp4', preload: 'metadata' },
+  2: { file: 'images/marquee/bong-marquee-film-scene.mp4', preload: 'metadata' },
+  3: { file: 'images/marquee/bong-marquee-property.mp4', preload: 'metadata' },
+}
+
+export type MarqueeItem = {
+  image: string
+  caption?: string
+  video?: string
+  videoPreload?: 'auto' | 'metadata' | 'none'
+}
+
+export const MARQUEE_ITEMS: MarqueeItem[] = MARQUEE_IMAGES.map((image, index) => {
+  const videoConfig = MARQUEE_VIDEO_FILES[index]
+  return {
+    image,
+    caption: MARQUEE_CAPTIONS[index] || undefined,
+    ...(videoConfig
+      ? {
+          video: asset(videoConfig.file),
+          videoPreload: videoConfig.preload ?? 'metadata',
+        }
+      : {}),
+  }
+})
+
+export const MARQUEE_VIDEO_PLAYBACK_RATE = 1
 
 export const DECOR_IMAGES = {
   moon: 'https://shrug-person-78902957.figma.site/_components/v2/ebb2b8f25d8e24d5f0a5ca8af4c950de81aa2fd7/moon_icon.11395d36.png',
@@ -37,14 +98,15 @@ export const profile = {
   displayName: 'bong',
   fullName: '陈泽邦',
   title: '互联网软件项目经理',
-  heroTagline: 'Professional Software Project Manager',
+  heroTagline: 'Professional Software\nProject Manager',
   aboutText:
     'With more than eight years of experience in project management, I focus on SaaS, CRM, ERP, and building digital visualization. I truly enjoy working with teams that aim to stand out and deliver exceptional results. Let\'s build something incredible together!',
   aboutTextZh:
-    '拥有 8 年以上互联网软件项目管理经验，深耕 SaaS、CRM、ERP 及建筑数字化可视化领域。持有 PMP 认证，擅长 KA 大客户统筹与跨团队敏捷交付。期待与你共创下一个精彩项目！',
+    '拥有 8 年以上互联网软件项目管理经验，\n深耕地产CRM、ERP、智慧楼宇及三维可视化领域。\n持有 PMP 认证，擅长 KA 大客户统筹与跨团队敏捷交付。\n期待与你共创下一个精彩项目！',
   contact: {
     email: '498671303@qq.com',
     phone: '15625902355',
+    wechat: 'czbyyds07',
     location: '深圳 · 广州 · 佛山',
   },
   services: [

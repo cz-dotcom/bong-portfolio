@@ -19,7 +19,7 @@ export interface SplitTextProps {
   delay?: number
   duration?: number
   ease?: string | ((t: number) => number)
-  splitType?: 'chars' | 'words' | 'lines' | 'words, chars'
+  splitType?: 'chars' | 'words' | 'lines' | 'words, chars' | 'lines, chars'
   from?: gsap.TweenVars
   to?: gsap.TweenVars
   threshold?: number

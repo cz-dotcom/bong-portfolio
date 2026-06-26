@@ -37,3 +37,24 @@ body,
 .hero-portrait {
   width: clamp(180px, 22vw, 400px);
 }
+
+.about-copy .split-line {
+  display: block;
+  padding-block: 0.15em;
+}
+
+.about-copy .split-char {
+  display: inline-block;
+}
+
+.hero-tagline.split-parent {
+  display: block;
+}
+
+.hero-tagline .split-line {
+  display: block;
+}
+
+.hero-tagline .split-line:last-child {
+  margin-bottom: 0;
+}

@@ -28,8 +28,8 @@ if ($token -notmatch '^ghp_') {
   Write-Host 'Warning: token usually starts with ghp_ - please check you copied the right text.'
 }
 
-$remote = 'https://github.com/CZ-dotcom/bong-portfolio.git'
-$pushUrl = "https://CZ-dotcom:$token@github.com/CZ-dotcom/bong-portfolio.git"
+$remote = 'https://github.com/cz-dotcom/bong-portfolio.git'
+$pushUrl = "https://cz-dotcom:$token@github.com/cz-dotcom/bong-portfolio.git"
 
 Write-Host ''
 Write-Host 'Pushing...'

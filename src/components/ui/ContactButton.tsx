@@ -1,17 +1,20 @@
+import { useContactModal } from '../../context/ContactModalContext'
+
 type ContactButtonProps = {
   className?: string
   label?: string
-  href?: string
 }
 
 export default function ContactButton({
   className = '',
   label = 'Contact Me',
-  href = 'mailto:498671303@qq.com',
 }: ContactButtonProps) {
+  const { openModal } = useContactModal()
+
   return (
-    <a
-      href={href}
+    <button
+      type="button"
+      onClick={openModal}
       className={`inline-flex items-center justify-center rounded-full px-8 py-3 text-xs font-medium uppercase tracking-widest text-white transition-transform hover:scale-105 sm:px-10 sm:py-3.5 sm:text-sm md:px-12 md:py-4 md:text-base ${className}`}
       style={{
         background:
@@ -23,6 +26,6 @@ export default function ContactButton({
       }}
     >
       {label}
-    </a>
+    </button>
   )
 }

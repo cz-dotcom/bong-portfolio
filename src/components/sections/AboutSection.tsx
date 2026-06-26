@@ -1,6 +1,6 @@
 import ContactButton from '../ui/ContactButton'
-import AnimatedText from '../ui/AnimatedText'
 import FadeIn from '../ui/FadeIn'
+import SplitText from '../ui/SplitText'
 import { DECOR_IMAGES, profile } from '../../data/profile'
 
 export default function AboutSection() {
@@ -63,10 +63,28 @@ export default function AboutSection() {
           </h2>
         </FadeIn>
 
-        <AnimatedText text={profile.aboutTextZh} />
+        <SplitText
+          text={profile.aboutTextZh}
+          className="about-copy mx-auto max-w-[42rem] px-4 font-normal text-mist/90"
+          style={{
+            fontSize: 'clamp(1.05rem, 1.8vw, 1.3rem)',
+            lineHeight: 1.95,
+            letterSpacing: '0.04em',
+            whiteSpace: 'pre-line',
+          }}
+          delay={12}
+          duration={0.45}
+          ease="power2.out"
+          splitType="lines, chars"
+          from={{ opacity: 0, y: 20 }}
+          to={{ opacity: 1, y: 0 }}
+          threshold={0.15}
+          rootMargin="-80px"
+          textAlign="center"
+        />
 
         <FadeIn delay={0.2} y={20} className="mt-16 sm:mt-20 md:mt-24">
-          <ContactButton label="联系我" href={`mailto:${profile.contact.email}`} />
+          <ContactButton label="联系我" />
         </FadeIn>
       </div>
     </section>

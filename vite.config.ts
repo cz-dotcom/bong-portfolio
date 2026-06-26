@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  // GitHub Pages 项目站：https://<用户名>.github.io/bong-portfolio/
-  base: '/bong-portfolio/',
-})
+  // 生产构建走 GitHub Pages 子路径；本地 dev 用根路径，避免黑屏/404
+  base: mode === 'production' ? '/bong-portfolio/' : '/',
+}))
