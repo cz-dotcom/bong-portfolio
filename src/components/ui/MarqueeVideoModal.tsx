@@ -117,6 +117,7 @@ export default function MarqueeVideoModal({ item, onClose }: MarqueeVideoModalPr
                   muted
                   playsInline
                   preload="auto"
+                  disablePictureInPicture
                 />
               </div>
             </div>

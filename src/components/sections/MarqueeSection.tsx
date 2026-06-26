@@ -64,16 +64,18 @@ function MarqueeCaption({ text }: { text: string }) {
 
 function MarqueeVideo({
   src,
+  poster,
   cardWidth,
   isMobile,
   playbackRate,
   caption,
-  preload = 'metadata',
+  preload = 'none',
   shouldPlay,
   playDelay = 0,
   onOpen,
 }: {
   src: string
+  poster?: string
   cardWidth: number
   isMobile: boolean
   playbackRate: number
@@ -85,37 +87,55 @@ function MarqueeVideo({
 }) {
   const containerRef = useRef<HTMLButtonElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const loadedSrcRef = useRef<string | null>(null)
   const inView = useCardInView(containerRef, shouldPlay)
   const [ready, setReady] = useState(false)
+  const shouldLoad = shouldPlay && inView
+
+  useEffect(() => {
+    setReady(false)
+  }, [src, shouldLoad])
 
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
+
+    if (!shouldLoad) {
+      video.pause()
+      if (loadedSrcRef.current) {
+        video.removeAttribute('src')
+        video.load()
+        loadedSrcRef.current = null
+      }
+      return
+    }
+
+    if (loadedSrcRef.current !== src) {
+      video.src = src
+      loadedSrcRef.current = src
+      video.load()
+    }
 
     const onReady = () => setReady(true)
     video.addEventListener('loadeddata', onReady)
     if (video.readyState >= 2) setReady(true)
 
     return () => video.removeEventListener('loadeddata', onReady)
-  }, [src])
+  }, [src, shouldLoad])
 
   useEffect(() => {
     const video = videoRef.current
-    if (!video) return
+    if (!video || !shouldLoad) return
 
     let timer = 0
 
-    if (shouldPlay && inView) {
-      video.playbackRate = playbackRate
-      timer = window.setTimeout(() => {
-        void video.play().catch(() => {})
-      }, playDelay)
-    } else {
-      video.pause()
-    }
+    video.playbackRate = playbackRate
+    timer = window.setTimeout(() => {
+      void video.play().catch(() => {})
+    }, playDelay)
 
     return () => window.clearTimeout(timer)
-  }, [shouldPlay, inView, playbackRate, playDelay, src])
+  }, [shouldLoad, playbackRate, playDelay, src])
 
   return (
     <button
@@ -129,12 +149,23 @@ function MarqueeVideo({
       }}
       aria-label={caption ? `放大播放：${caption}` : '放大播放案例视频'}
     >
-      {!ready && (
+      {poster && !ready ? (
+        <img
+          src={poster}
+          alt=""
+          aria-hidden
+          decoding="async"
+          className={`absolute inset-0 z-0 h-full w-full ${
+            isMobile ? 'object-contain' : 'object-cover'
+          }`}
+        />
+      ) : null}
+      {!ready && !poster ? (
         <div className="absolute inset-0 z-0 animate-pulse bg-[#161616]" aria-hidden />
-      )}
+      ) : null}
       <video
         ref={videoRef}
-        src={src}
+        poster={poster}
         autoPlay={false}
         loop
         muted
@@ -173,11 +204,12 @@ function MarqueeCard({
     return (
       <MarqueeVideo
         src={item.video}
+        poster={item.image}
         cardWidth={cardWidth}
         isMobile={isMobile}
         playbackRate={MARQUEE_VIDEO_PLAYBACK_RATE}
         caption={item.caption}
-        preload={item.videoPreload ?? 'metadata'}
+        preload={item.videoPreload ?? 'none'}
         shouldPlay={previewActive}
         playDelay={videoIndex * 120}
         onOpen={() =>

@@ -66,24 +66,24 @@ const MARQUEE_VIDEO_FILES: Partial<
   >
 > = {
   0: {
-    preview: 'images/marquee/bong-marquee-intro.mp4',
+    preview: 'images/marquee/bong-marquee-intro-lite.mp4',
     hd: 'images/marquee/bong-marquee-intro-hd.mp4',
-    preload: 'metadata',
+    preload: 'none',
   },
   1: {
-    preview: 'images/marquee/bong-marquee-logistics.mp4',
+    preview: 'images/marquee/bong-marquee-logistics-lite.mp4',
     hd: 'images/marquee/bong-marquee-logistics-hd.mp4',
-    preload: 'metadata',
+    preload: 'none',
   },
   2: {
-    preview: 'images/marquee/bong-marquee-film-scene.mp4',
+    preview: 'images/marquee/bong-marquee-film-scene-lite.mp4',
     hd: 'images/marquee/bong-marquee-film-scene-hd.mp4',
-    preload: 'metadata',
+    preload: 'none',
   },
   3: {
-    preview: 'images/marquee/bong-marquee-property.mp4',
+    preview: 'images/marquee/bong-marquee-property-lite.mp4',
     hd: 'images/marquee/bong-marquee-property-hd.mp4',
-    preload: 'metadata',
+    preload: 'none',
   },
 }
 

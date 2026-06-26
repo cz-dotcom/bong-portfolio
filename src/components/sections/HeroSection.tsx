@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import ContactButton from '../ui/ContactButton'
 import CompanyLogos from '../ui/CompanyLogos'
 import FadeIn from '../ui/FadeIn'
@@ -12,6 +13,16 @@ const HERO_TITLE = `Hi, i'm ${profile.displayName}`
 const LIQUID_COLORS = ['#5227FF', '#FF9FFC', '#B497CF']
 
 export default function HeroSection() {
+  const [liquidResolution, setLiquidResolution] = useState(0.5)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)')
+    const sync = () => setLiquidResolution(mq.matches ? 0.35 : 0.5)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
   return (
     <section
       id="hero"
@@ -26,7 +37,7 @@ export default function HeroSection() {
           viscous={30}
           iterationsViscous={32}
           iterationsPoisson={32}
-          resolution={0.5}
+          resolution={liquidResolution}
           isBounce={false}
           autoDemo
           autoSpeed={0.5}
