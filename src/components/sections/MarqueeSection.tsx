@@ -7,6 +7,7 @@ import {
 import MarqueeVideoModal, {
   type MarqueeVideoModalItem,
 } from '../ui/MarqueeVideoModal'
+import CaseStudyLabel from '../ui/CaseStudyLabel'
 
 /** 仅展示 4 个视频案例，避免多余解码与带宽占用 */
 const ROW_ITEMS = MARQUEE_ITEMS.slice(0, 4)
@@ -423,6 +424,7 @@ export default function MarqueeSection() {
       ref={sectionRef}
       className="relative z-30 overflow-x-clip bg-dark px-4 pb-10 pt-6 sm:px-0 sm:pb-8 sm:pt-12 md:pt-16 lg:pt-20"
     >
+      <CaseStudyLabel className="mb-4 sm:mb-5 sm:pl-8 md:pl-10" />
       {isMobile ? (
         <MobileMarqueeCarousel
           items={ROW_ITEMS}
