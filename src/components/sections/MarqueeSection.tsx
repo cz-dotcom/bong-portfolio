@@ -64,7 +64,6 @@ function MarqueeCaption({ text }: { text: string }) {
 
 function MarqueeVideo({
   src,
-  poster,
   cardWidth,
   isMobile,
   playbackRate,
@@ -75,7 +74,6 @@ function MarqueeVideo({
   onOpen,
 }: {
   src: string
-  poster?: string
   cardWidth: number
   isMobile: boolean
   playbackRate: number
@@ -149,23 +147,11 @@ function MarqueeVideo({
       }}
       aria-label={caption ? `放大播放：${caption}` : '放大播放案例视频'}
     >
-      {poster && !ready ? (
-        <img
-          src={poster}
-          alt=""
-          aria-hidden
-          decoding="async"
-          className={`absolute inset-0 z-0 h-full w-full ${
-            isMobile ? 'object-contain' : 'object-cover'
-          }`}
-        />
-      ) : null}
-      {!ready && !poster ? (
-        <div className="absolute inset-0 z-0 animate-pulse bg-[#161616]" aria-hidden />
+      {!ready ? (
+        <div className="absolute inset-0 z-0 bg-[#111]" aria-hidden />
       ) : null}
       <video
         ref={videoRef}
-        poster={poster}
         autoPlay={false}
         loop
         muted
@@ -204,7 +190,6 @@ function MarqueeCard({
     return (
       <MarqueeVideo
         src={item.video}
-        poster={item.image}
         cardWidth={cardWidth}
         isMobile={isMobile}
         playbackRate={MARQUEE_VIDEO_PLAYBACK_RATE}
