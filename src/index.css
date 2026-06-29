@@ -96,3 +96,15 @@ body,
   transform: translateZ(0);
   backface-visibility: hidden;
 }
+
+@media (min-width: 1024px) {
+  .projects-feature-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .projects-timeline-row {
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+}

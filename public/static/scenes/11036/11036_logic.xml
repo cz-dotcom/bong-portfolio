@@ -1,0 +1,195 @@
+<xml xmlns="http://www.w3.org/1999/xhtml">
+  <tab name="初始化" type="InitTab" active="false" scrollx="0" scrolly="0" scale="0.9"></tab>
+  <tab name="逻辑" type="MainTab" active="true" scrollx="-67.41800763890251" scrolly="-112.68604882075442" scale="0.7404322273126936">
+    <block xmlns="https://developers.google.com/blockly/xml" type="receiveEvent" id="$`+U`oQQNEt(_f{Lv4pi" x="290" y="150">
+      <value name="EVENT">
+        <shadow type="text" id="*k^%x0,l+SN:o}1-GQUv">
+          <field name="TEXT">放大</field>
+        </shadow>
+      </value>
+      <statement name="CALLBACK">
+        <block type="playStateAnimation" id=";qtJA!G.qR080LvkxC]k">
+          <field name="STATE">3</field>
+          <value name="StateAnimation">
+            <shadow type="stateAnimationList" id="cFcfsIF`Lth`|cOasP!e">
+              <field name="FIELDNAME">PoXcHUxRwsKWl1bGvIRkX</field>
+            </shadow>
+          </value>
+        </block>
+      </statement>
+      <next>
+        <block type="receiveEvent" id="5s`%^ngWSKJDbC/rT#Sl">
+          <value name="EVENT">
+            <shadow type="text" id="0#%+}e5Sf?vH}/j93^Gi">
+              <field name="TEXT">缩小</field>
+            </shadow>
+          </value>
+          <statement name="CALLBACK">
+            <block type="playStateAnimation" id="ZQ:gPuLH*{%X~8[Fu|Vx">
+              <field name="STATE">0</field>
+              <value name="StateAnimation">
+                <shadow type="stateAnimationList" id="J[c7WUX3h|56%n~xn6Ms">
+                  <field name="FIELDNAME">PoXcHUxRwsKWl1bGvIRkX</field>
+                </shadow>
+              </value>
+            </block>
+          </statement>
+          <next>
+            <block type="receiveEvent" id="T~?42t9^ax{e+W]8WYTk">
+              <value name="EVENT">
+                <shadow type="text" id="C598A/RH7!;Y4Bva8+]6">
+                  <field name="TEXT">默认</field>
+                </shadow>
+              </value>
+              <statement name="CALLBACK">
+                <block type="setActiveCamera" id="bgQiDm(Qf3,F]!l}h%K;">
+                  <value name="CAMERA">
+                    <shadow type="cameraList" id="f|^MBrDsA`ZfH,~`S2^R">
+                      <field name="FIELDNAME">侧视图</field>
+                    </shadow>
+                  </value>
+                  <value name="DURATION">
+                    <shadow type="math_number" id="RzzM=]@@qtiZ1A{8QdSJ">
+                      <field name="NUM">1</field>
+                    </shadow>
+                  </value>
+                  <next>
+                    <block type="playStateAnimation" id="T!1aqkREE9iv.0T/nrfH">
+                      <field name="STATE">2</field>
+                      <value name="StateAnimation">
+                        <shadow type="stateAnimationList" id="D6bd#5hMqZ$#MLH(hqHj">
+                          <field name="FIELDNAME">PoXcHUxRwsKWl1bGvIRkX</field>
+                        </shadow>
+                      </value>
+                    </block>
+                  </next>
+                </block>
+              </statement>
+              <next>
+                <block type="receiveEvent" id=";wccVrO?pd1c?-aAoWF8">
+                  <value name="EVENT">
+                    <shadow type="text" id="YeX{+gCKU=K_sBD:~5;F">
+                      <field name="TEXT">顶视图</field>
+                    </shadow>
+                  </value>
+                  <statement name="CALLBACK">
+                    <block type="setActiveCamera" id=".c!0wAD@?J~4:q]J6rdk">
+                      <value name="CAMERA">
+                        <shadow type="cameraList" id="a,zP0Z8^EV46z(!eJdra">
+                          <field name="FIELDNAME">顶视图</field>
+                        </shadow>
+                      </value>
+                      <value name="DURATION">
+                        <shadow type="math_number" id="gpDRv/,|=;dl*(![D8*K">
+                          <field name="NUM">1</field>
+                        </shadow>
+                      </value>
+                    </block>
+                  </statement>
+                  <next>
+                    <block type="receiveEvent" id="AYc/~O{m`oxiUE(`iada">
+                      <value name="EVENT">
+                        <shadow type="text" id="0L.E14%u-`Tmjx/VPeKq">
+                          <field name="TEXT">侧视图</field>
+                        </shadow>
+                      </value>
+                      <statement name="CALLBACK">
+                        <block type="setActiveCamera" id="`)sY~bM}%Q,)@A1[D/rA">
+                          <value name="CAMERA">
+                            <shadow type="cameraList" id="G=yklO2WHp2UDrC=}83$">
+                              <field name="FIELDNAME">侧视图</field>
+                            </shadow>
+                          </value>
+                          <value name="DURATION">
+                            <shadow type="math_number" id="%iO=8,Zse]lj0/!(%N;$">
+                              <field name="NUM">1</field>
+                            </shadow>
+                          </value>
+                        </block>
+                      </statement>
+                    </block>
+                  </next>
+                </block>
+              </next>
+            </block>
+          </next>
+        </block>
+      </next>
+    </block>
+    <block xmlns="https://developers.google.com/blockly/xml" type="receiveEvent" id="AcK}p1*u9E3P*lD4EB|k" x="870" y="230">
+      <value name="EVENT">
+        <shadow type="text" id="orpg`1_Cv;gw5]DdS5_I">
+          <field name="TEXT">无</field>
+        </shadow>
+      </value>
+      <statement name="CALLBACK">
+        <block type="playStateAnimation" id="3BuuMBev#vL!ZoJZ#lo(">
+          <field name="STATE">0</field>
+          <value name="StateAnimation">
+            <shadow type="stateAnimationList" id="#lHL/#l!q8P%LZe?ajB~">
+              <field name="FIELDNAME">ND-1wMkDxzP1IZeYJyLw0</field>
+            </shadow>
+          </value>
+        </block>
+      </statement>
+      <next>
+        <block type="receiveEvent" id="k=5zsqU.B#duVz5Shl4l">
+          <value name="EVENT">
+            <shadow type="text" id="ot8h(|W9?FJcdLk+fDuk">
+              <field name="TEXT">热力</field>
+            </shadow>
+          </value>
+          <statement name="CALLBACK">
+            <block type="playStateAnimation" id="3JKBDhJw8(#7R@J6B9w[">
+              <field name="STATE">1</field>
+              <value name="StateAnimation">
+                <shadow type="stateAnimationList" id="`Yu7)3r+tde-aqrq=C$.">
+                  <field name="FIELDNAME">ND-1wMkDxzP1IZeYJyLw0</field>
+                </shadow>
+              </value>
+            </block>
+          </statement>
+          <next>
+            <block type="receiveEvent" id="TNVX%{nIBQyzLx-eSLto">
+              <value name="EVENT">
+                <shadow type="text" id="+ci%XEBs,6:xfIeU#Vvm">
+                  <field name="TEXT">点位</field>
+                </shadow>
+              </value>
+              <statement name="CALLBACK">
+                <block type="playStateAnimation" id="%nvgik(i1r}!#%f9z4VB">
+                  <field name="STATE">2</field>
+                  <value name="StateAnimation">
+                    <shadow type="stateAnimationList" id="rguzhA|0Am7L@H[)!P]8">
+                      <field name="FIELDNAME">ND-1wMkDxzP1IZeYJyLw0</field>
+                    </shadow>
+                  </value>
+                </block>
+              </statement>
+              <next>
+                <block type="receiveEvent" id="#jcgYYxz|Mtyc=*wvjlv">
+                  <value name="EVENT">
+                    <shadow type="text" id="y+9$PQgcgp;7y=_A`2+b">
+                      <field name="TEXT">路线</field>
+                    </shadow>
+                  </value>
+                  <statement name="CALLBACK">
+                    <block type="playStateAnimation" id="3o?pY(j7nXG,+G1w?`1G">
+                      <field name="STATE">3</field>
+                      <value name="StateAnimation">
+                        <shadow type="stateAnimationList" id="UVIVwD;$4:SG%AtHp7}(">
+                          <field name="FIELDNAME">ND-1wMkDxzP1IZeYJyLw0</field>
+                        </shadow>
+                      </value>
+                    </block>
+                  </statement>
+                </block>
+              </next>
+            </block>
+          </next>
+        </block>
+      </next>
+    </block>
+  </tab>
+  <editorsettings viewport-x="715.2" viewport-y="28" viewport-w="488.8" viewport-h="127.5" viewport-hidden="false" toolbox-library-mode="false" toolbox-minimized-mode="false"></editorsettings>
+</xml>
