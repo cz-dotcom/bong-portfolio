@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { loadKingfisherRuntime } from '../../lib/loadKingfisher'
+import { preloadWeb3dModule, preloadWeb3dScene } from '../../lib/preloadWeb3d'
+import {
+  getPerformanceProfile,
+  getWeb3dRenderLimits,
+  isWeChatBrowser,
+  scheduleNonBlocking,
+} from '../../lib/wechatEnv'
 import type { Web3dManager } from '../../lib/web3d.js'
 
 type Web3dSceneViewerProps = {
@@ -17,6 +24,12 @@ const SCENE_CONTROLS = [
   { event: '点位', label: '点位' },
 ] as const
 
+function shouldPreloadScene() {
+  if (isWeChatBrowser()) return false
+  const params = new URLSearchParams(window.location.search)
+  return params.has('web3d') || window.location.hash === '#projects'
+}
+
 export default function Web3dSceneViewer({
   sceneId,
   className = '',
@@ -26,24 +39,64 @@ export default function Web3dSceneViewer({
   const hostRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const managerRef = useRef<Web3dManager | null>(null)
+  const profile = getPerformanceProfile()
+  const wechatMode = profile === 'wechat'
+  const { limitWidth, limitHeight } = getWeb3dRenderLimits(profile)
+
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
-  const [visible, setVisible] = useState(false)
+  const [inView, setInView] = useState(false)
+  const [nearView, setNearView] = useState(false)
+  const [runtimeReady, setRuntimeReady] = useState(false)
+  const [userRequested, setUserRequested] = useState(!wechatMode)
   const [activeControl, setActiveControl] = useState<string>('侧视图')
+
+  const shouldLoad = inView && userRequested
 
   useEffect(() => {
     const el = hostRef.current
     if (!el) return
 
-    const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { threshold: 0.12 },
+    if (shouldPreloadScene()) {
+      setInView(true)
+      void preloadWeb3dScene(sceneId).then(() => setRuntimeReady(true))
+    }
+
+    const nearMargin = wechatMode ? '180% 0px 80% 0px' : '120% 0px 60% 0px'
+
+    const nearObserver = new IntersectionObserver(
+      ([entry]) => setNearView(entry.isIntersecting),
+      { rootMargin: nearMargin, threshold: 0 },
     )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+
+    const viewObserver = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: wechatMode ? 0.35 : 0.12, rootMargin: wechatMode ? '0px' : '80px' },
+    )
+
+    nearObserver.observe(el)
+    viewObserver.observe(el)
+
+    return () => {
+      nearObserver.disconnect()
+      viewObserver.disconnect()
+    }
+  }, [wechatMode, sceneId])
 
   useEffect(() => {
-    if (!visible) {
+    if (!nearView) return
+
+    let cancelled = false
+    void preloadWeb3dScene(sceneId).then(() => {
+      if (!cancelled) setRuntimeReady(true)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [nearView, sceneId])
+
+  useEffect(() => {
+    if (!shouldLoad) {
       managerRef.current?.destroy()
       managerRef.current = null
       setStatus('idle')
@@ -57,43 +110,49 @@ export default function Web3dSceneViewer({
     let cancelled = false
     setStatus('loading')
 
-    loadKingfisherRuntime()
-      .then(async () => {
-        if (cancelled) return
+    const startLoad = () => {
+      if (cancelled) return
 
-        const { Web3dManager: Manager } = await import('../../lib/web3d.js')
-        const manager = new Manager(canvas, {
-          sceneId: [sceneId],
-          limitWidth: 1280,
-          limitHeight: 720,
-        }) as Web3dManager
+      Promise.all([loadKingfisherRuntime(), preloadWeb3dModule()])
+        .then(async () => {
+          if (cancelled) return
 
-        if (!manager.getEngine?.()) {
-          throw new Error('Kingfisher engine failed to start')
-        }
+          const { Web3dManager: Manager } = await preloadWeb3dModule()
+          const manager = new Manager(canvas, {
+            sceneId: [sceneId],
+            limitWidth,
+            limitHeight,
+          }) as Web3dManager
 
-        manager.registerWeb3dListener({
-          onLoad: () => {
-            if (!cancelled) setStatus('ready')
-          },
-          onLoadingHide: () => {
-            if (!cancelled) setStatus('ready')
-          },
+          if (!manager.getEngine?.()) {
+            throw new Error('Kingfisher engine failed to start')
+          }
+
+          manager.registerWeb3dListener({
+            onLoad: () => {
+              if (!cancelled) setStatus('ready')
+            },
+            onLoadingHide: () => {
+              if (!cancelled) setStatus('ready')
+            },
+          })
+
+          managerRef.current = manager
         })
+        .catch((error) => {
+          console.error('[Web3dSceneViewer]', error)
+          if (!cancelled) setStatus('error')
+        })
+    }
 
-        managerRef.current = manager
-      })
-      .catch((error) => {
-        console.error('[Web3dSceneViewer]', error)
-        if (!cancelled) setStatus('error')
-      })
+    scheduleNonBlocking(startLoad, runtimeReady ? 80 : wechatMode ? 200 : 800)
 
     return () => {
       cancelled = true
       managerRef.current?.destroy()
       managerRef.current = null
     }
-  }, [visible, sceneId])
+  }, [shouldLoad, sceneId, limitWidth, limitHeight, wechatMode, runtimeReady])
 
   const triggerSceneEvent = useCallback((event: string) => {
     const manager = managerRef.current
@@ -102,6 +161,12 @@ export default function Web3dSceneViewer({
     manager.issueEvent(event)
     setActiveControl(event)
   }, [status])
+
+  const handleLoadRequest = () => {
+    setUserRequested(true)
+  }
+
+  const showTapToLoad = wechatMode && inView && !userRequested && status === 'idle'
 
   return (
     <div ref={hostRef} className={`relative h-full w-full ${className}`}>
@@ -113,6 +178,23 @@ export default function Web3dSceneViewer({
           className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-500"
           style={{ opacity: status === 'ready' ? 0 : 1 }}
         />
+      ) : null}
+
+      {showTapToLoad ? (
+        <button
+          type="button"
+          onClick={handleLoadRequest}
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-[#070707]/55 px-4 backdrop-blur-[2px] transition hover:bg-[#070707]/65"
+        >
+          <span className="rounded-full border border-[#A855F7]/50 bg-[#A855F7]/15 px-4 py-2 text-xs font-medium text-[#E9D5FF] sm:text-sm">
+            {runtimeReady ? '资源已就绪 · 点击加载 3D' : '正在预加载 3D 资源…'}
+          </span>
+          <span className="max-w-[240px] text-center text-[10px] leading-relaxed text-mist/50 sm:text-[11px]">
+            {runtimeReady
+              ? '引擎已在后台准备完成，点击后立即显示场景'
+              : '滚动到此区域后已在后台下载，请稍候或点击提前加载'}
+          </span>
+        </button>
       ) : null}
 
       {demoNotice && status !== 'error' ? (
@@ -148,7 +230,7 @@ export default function Web3dSceneViewer({
 
       {status === 'loading' ? (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#070707]/85 text-sm text-mist/55">
-          3D 场景加载中…
+          {runtimeReady ? '3D 场景初始化中…' : '3D 资源加载中…'}
         </div>
       ) : null}
 

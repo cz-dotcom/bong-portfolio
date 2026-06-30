@@ -8,6 +8,9 @@ import MarqueeVideoModal, {
   type MarqueeVideoModalItem,
 } from '../ui/MarqueeVideoModal'
 import CaseStudyLabel from '../ui/CaseStudyLabel'
+import { isWeChatBrowser, useWeChatVideoAttrs } from '../../lib/wechatEnv'
+
+const WECHAT_MODE = typeof window !== 'undefined' && isWeChatBrowser()
 
 /** 仅展示 4 个视频案例，避免多余解码与带宽占用 */
 const ROW_ITEMS = MARQUEE_ITEMS.slice(0, 4)
@@ -65,6 +68,7 @@ function MarqueeCaption({ text }: { text: string }) {
 
 function MarqueeVideo({
   src,
+  poster,
   cardWidth,
   isMobile,
   playbackRate,
@@ -75,6 +79,7 @@ function MarqueeVideo({
   onOpen,
 }: {
   src: string
+  poster?: string
   cardWidth: number
   isMobile: boolean
   playbackRate: number
@@ -88,8 +93,11 @@ function MarqueeVideo({
   const videoRef = useRef<HTMLVideoElement>(null)
   const loadedSrcRef = useRef<string | null>(null)
   const inView = useCardInView(containerRef, shouldPlay)
+  const [activated, setActivated] = useState(!WECHAT_MODE)
   const [ready, setReady] = useState(false)
-  const shouldLoad = shouldPlay && inView
+  const shouldLoad = shouldPlay && inView && activated
+
+  useWeChatVideoAttrs(videoRef)
 
   useEffect(() => {
     setReady(false)
@@ -136,19 +144,53 @@ function MarqueeVideo({
     return () => window.clearTimeout(timer)
   }, [shouldLoad, playbackRate, playDelay, src])
 
+  const handleClick = () => {
+    if (WECHAT_MODE && !activated) {
+      setActivated(true)
+      return
+    }
+    onOpen()
+  }
+
+  const showPoster = WECHAT_MODE && poster && !ready
+
   return (
     <button
       type="button"
       ref={containerRef}
-      onClick={onOpen}
-      className="group relative shrink-0 cursor-pointer overflow-hidden rounded-2xl bg-[#111] text-left transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9FFC]"
+      onClick={handleClick}
+      className="glass-panel group relative shrink-0 cursor-pointer overflow-hidden rounded-2xl bg-[#0a0a0c]/50 text-left transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9FFC]"
       style={{
         width: cardWidth,
         aspectRatio: cardAspectRatio(isMobile),
       }}
-      aria-label={caption ? `放大播放：${caption}` : '放大播放案例视频'}
+      aria-label={
+        WECHAT_MODE && !activated
+          ? caption
+            ? `点击播放：${caption}`
+            : '点击播放案例视频'
+          : caption
+            ? `放大播放：${caption}`
+            : '放大播放案例视频'
+      }
     >
-      {!ready ? (
+      {showPoster ? (
+        <>
+          <img
+            src={poster}
+            alt=""
+            aria-hidden
+            className={`absolute inset-0 z-0 h-full w-full ${
+              isMobile ? 'object-contain' : 'object-cover'
+            }`}
+          />
+          <div className="absolute inset-0 z-[1] flex items-center justify-center bg-black/30">
+            <span className="rounded-full border border-mist/20 bg-black/60 px-3 py-1.5 text-[11px] font-medium text-mist backdrop-blur-sm sm:text-xs">
+              点击播放
+            </span>
+          </div>
+        </>
+      ) : !ready ? (
         <div className="absolute inset-0 z-0 bg-[#111]" aria-hidden />
       ) : null}
       <video
@@ -157,7 +199,7 @@ function MarqueeVideo({
         loop
         muted
         playsInline
-        preload={preload}
+        preload={WECHAT_MODE ? 'none' : preload}
         disablePictureInPicture
         className={`marquee-video pointer-events-none relative z-[1] h-full w-full ${
           isMobile ? 'object-contain' : 'object-cover'
@@ -191,16 +233,17 @@ function MarqueeCard({
     return (
       <MarqueeVideo
         src={item.video}
+        poster={item.image}
         cardWidth={cardWidth}
         isMobile={isMobile}
         playbackRate={MARQUEE_VIDEO_PLAYBACK_RATE}
         caption={item.caption}
         preload={item.videoPreload ?? 'none'}
         shouldPlay={previewActive}
-        playDelay={videoIndex * 120}
+        playDelay={WECHAT_MODE ? 0 : videoIndex * 120}
         onOpen={() =>
           onVideoOpen({
-            src: item.videoHd ?? item.video!,
+            src: WECHAT_MODE ? item.video! : (item.videoHd ?? item.video!),
             caption: item.caption,
           })
         }
@@ -210,7 +253,7 @@ function MarqueeCard({
 
   return (
     <div
-      className="relative shrink-0 overflow-hidden rounded-2xl bg-[#111]"
+      className="glass-panel relative shrink-0 overflow-hidden rounded-2xl bg-[#0a0a0c]/50"
       style={{
         width: cardWidth,
         aspectRatio: cardAspectRatio(isMobile),

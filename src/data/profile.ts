@@ -105,6 +105,8 @@ export const MARQUEE_ITEMS: MarqueeItem[] = MARQUEE_IMAGES.map((image, index) =>
   if (videoConfig) {
     return {
       caption,
+      /** 微信等弱网环境用作视频封面，避免自动拉取 mp4 */
+      image,
       video: asset(videoConfig.preview),
       videoHd: asset(videoConfig.hd),
       videoPreload: videoConfig.preload ?? 'none',

@@ -2,6 +2,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { MARQUEE_VIDEO_PLAYBACK_RATE } from '../../data/profile'
+import { isWeChatBrowser, useWeChatVideoAttrs } from '../../lib/wechatEnv'
+
+const WECHAT_MODE = typeof window !== 'undefined' && isWeChatBrowser()
 
 export type MarqueeVideoModalItem = {
   src: string
@@ -16,6 +19,8 @@ type MarqueeVideoModalProps = {
 export default function MarqueeVideoModal({ item, onClose }: MarqueeVideoModalProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const open = Boolean(item)
+
+  useWeChatVideoAttrs(videoRef)
 
   useEffect(() => {
     if (!open) return
@@ -116,7 +121,7 @@ export default function MarqueeVideoModal({ item, onClose }: MarqueeVideoModalPr
                   loop
                   muted
                   playsInline
-                  preload="auto"
+                  preload={WECHAT_MODE ? 'metadata' : 'auto'}
                   disablePictureInPicture
                 />
               </div>
