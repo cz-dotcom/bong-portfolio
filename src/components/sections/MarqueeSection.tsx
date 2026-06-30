@@ -9,7 +9,7 @@ import MarqueeVideoModal, {
 } from '../ui/MarqueeVideoModal'
 import CaseStudyLabel from '../ui/CaseStudyLabel'
 import LoadingOverlay from '../ui/LoadingOverlay'
-import { isWeChatBrowser, useWeChatVideoAttrs } from '../../lib/wechatEnv'
+import { isWeChatBrowser, applyWeChatVideoAttrs } from '../../lib/wechatEnv'
 
 const WECHAT_MODE = typeof window !== 'undefined' && isWeChatBrowser()
 
@@ -34,7 +34,11 @@ function marqueeItemKey(item: MarqueeItem, index: number) {
   return `${item.video ?? item.image ?? 'card'}-${index}`
 }
 
-function useCardInView(ref: RefObject<HTMLElement | null>, enabled: boolean) {
+function useCardInView(
+  ref: RefObject<HTMLElement | null>,
+  enabled: boolean,
+  relaxed = false,
+) {
   const [inView, setInView] = useState(false)
 
   useEffect(() => {
@@ -47,12 +51,18 @@ function useCardInView(ref: RefObject<HTMLElement | null>, enabled: boolean) {
     if (!el) return
 
     const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting && entry.intersectionRatio >= 0.2),
-      { threshold: [0, 0.2, 0.45] },
+      ([entry]) => {
+        setInView(
+          relaxed
+            ? entry.isIntersecting
+            : entry.isIntersecting && entry.intersectionRatio >= 0.2,
+        )
+      },
+      { threshold: relaxed ? [0, 0.1] : [0, 0.2, 0.45] },
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [enabled])
+  }, [enabled, relaxed])
 
   return inView
 }
@@ -75,7 +85,6 @@ function MarqueeVideo({
   caption,
   preload = 'none',
   shouldPlay,
-  playDelay = 0,
   onOpen,
 }: {
   src: string
@@ -85,21 +94,20 @@ function MarqueeVideo({
   caption?: string
   preload?: 'auto' | 'metadata' | 'none'
   shouldPlay: boolean
-  playDelay?: number
   onOpen: () => void
 }) {
   const containerRef = useRef<HTMLButtonElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const loadedSrcRef = useRef<string | null>(null)
-  const inView = useCardInView(containerRef, shouldPlay)
+  const inView = useCardInView(containerRef, shouldPlay, isMobile || WECHAT_MODE)
   const [ready, setReady] = useState(false)
   const shouldLoad = shouldPlay && inView
 
-  useWeChatVideoAttrs(videoRef)
-
   useEffect(() => {
-    setReady(false)
-  }, [src, shouldLoad])
+    if (!shouldLoad) {
+      setReady(false)
+    }
+  }, [shouldLoad])
 
   useEffect(() => {
     const video = videoRef.current
@@ -115,32 +123,41 @@ function MarqueeVideo({
       return
     }
 
+    applyWeChatVideoAttrs(video)
+
+    const markReady = () => setReady(true)
+
+    const onCanPlay = () => {
+      markReady()
+      void video.play().catch(() => {})
+    }
+
+    video.addEventListener('loadeddata', markReady)
+    video.addEventListener('canplay', onCanPlay)
+    video.addEventListener('playing', markReady)
+
     if (loadedSrcRef.current !== src) {
       video.src = src
       loadedSrcRef.current = src
       video.load()
     }
 
-    const onReady = () => setReady(true)
-    video.addEventListener('loadeddata', onReady)
-    if (video.readyState >= 2) setReady(true)
+    if (video.readyState >= 2) onCanPlay()
 
-    return () => video.removeEventListener('loadeddata', onReady)
+    return () => {
+      video.removeEventListener('loadeddata', markReady)
+      video.removeEventListener('canplay', onCanPlay)
+      video.removeEventListener('playing', markReady)
+    }
   }, [src, shouldLoad])
 
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !shouldLoad) return
-
-    let timer = 0
+    if (!video || !shouldLoad || !ready) return
 
     video.playbackRate = playbackRate
-    timer = window.setTimeout(() => {
-      void video.play().catch(() => {})
-    }, playDelay)
-
-    return () => window.clearTimeout(timer)
-  }, [shouldLoad, playbackRate, playDelay, src])
+    void video.play().catch(() => {})
+  }, [shouldLoad, ready, playbackRate, src])
 
   return (
     <button
@@ -155,17 +172,17 @@ function MarqueeVideo({
       aria-label={caption ? `放大播放：${caption}` : '放大播放案例视频'}
     >
       {shouldLoad && !ready ? (
-        <LoadingOverlay label="视频加载中…" className="z-[1] bg-[#0a0a0c]" />
+        <LoadingOverlay label="视频加载中…" className="z-[3] bg-[#0a0a0c]" />
       ) : null}
       <video
         ref={videoRef}
-        autoPlay={false}
+        autoPlay
         loop
         muted
         playsInline
-        preload={preload}
+        preload={isMobile || WECHAT_MODE ? 'metadata' : preload}
         disablePictureInPicture
-        className={`marquee-video pointer-events-none relative z-[1] h-full w-full ${
+        className={`marquee-video pointer-events-none relative z-[2] h-full w-full ${
           isMobile ? 'object-contain' : 'object-cover'
         } ${ready ? 'opacity-100' : 'opacity-0'}`}
       />
@@ -183,14 +200,12 @@ function MarqueeCard({
   cardWidth,
   isMobile,
   previewActive,
-  videoIndex,
   onVideoOpen,
 }: {
   item: MarqueeItem
   cardWidth: number
   isMobile: boolean
   previewActive: boolean
-  videoIndex: number
   onVideoOpen: (item: MarqueeVideoModalItem) => void
 }) {
   if (item.video) {
@@ -203,7 +218,6 @@ function MarqueeCard({
         caption={item.caption}
         preload={item.videoPreload ?? 'none'}
         shouldPlay={previewActive}
-        playDelay={videoIndex * 120}
         onOpen={() =>
           onVideoOpen({
             src: WECHAT_MODE ? item.video! : (item.videoHd ?? item.video!),
@@ -277,8 +291,6 @@ function MobileMarqueeCarousel({
     setIndex(targetIndex)
   }
 
-  let videoIndex = 0
-
   return (
     <div className="w-full">
       <div
@@ -286,22 +298,17 @@ function MobileMarqueeCarousel({
         className="w-full overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <div className="flex snap-x snap-mandatory gap-3">
-          {items.map((item, i) => {
-            const currentVideoIndex = item.video ? videoIndex++ : -1
-
-            return (
+          {items.map((item, i) => (
               <div key={marqueeItemKey(item, i)} className="shrink-0 snap-center">
                 <MarqueeCard
                   item={item}
                   cardWidth={cardWidth}
                   isMobile
                   previewActive={active && i === index}
-                  videoIndex={currentVideoIndex >= 0 ? currentVideoIndex : 0}
                   onVideoOpen={onVideoOpen}
                 />
               </div>
-            )
-          })}
+            ))}
         </div>
       </div>
 
@@ -335,30 +342,23 @@ function MarqueeRow({
   active: boolean
   onVideoOpen: (item: MarqueeVideoModalItem) => void
 }) {
-  let videoIndex = 0
-
   return (
     <div className="w-full overflow-hidden">
       <div
         className="flex gap-3"
         style={{ marginLeft: `${parallaxOffset}px` }}
       >
-        {items.map((item, i) => {
-          const currentVideoIndex = item.video ? videoIndex++ : -1
-
-          return (
+        {items.map((item, i) => (
             <div key={marqueeItemKey(item, i)} className="shrink-0">
               <MarqueeCard
                 item={item}
                 cardWidth={cardWidth}
                 isMobile={false}
                 previewActive={active}
-                videoIndex={currentVideoIndex >= 0 ? currentVideoIndex : 0}
                 onVideoOpen={onVideoOpen}
               />
             </div>
-          )
-        })}
+          ))}
       </div>
     </div>
   )

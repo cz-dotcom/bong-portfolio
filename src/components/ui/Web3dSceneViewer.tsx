@@ -13,7 +13,6 @@ type Web3dSceneViewerProps = {
   sceneId: string
   className?: string
   fallbackImage?: string
-  /** 示意场景保密说明（非实际项目交付内容） */
   demoNotice?: string
 }
 
@@ -23,6 +22,8 @@ const SCENE_CONTROLS = [
   { event: '热力', label: '热力' },
   { event: '点位', label: '点位' },
 ] as const
+
+const LOAD_TIMEOUT_MS = 90_000
 
 function shouldPreloadScene() {
   const params = new URLSearchParams(window.location.search)
@@ -44,7 +45,7 @@ export default function Web3dSceneViewer({
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [inView, setInView] = useState(false)
   const [nearView, setNearView] = useState(false)
-  const [runtimeReady, setRuntimeReady] = useState(false)
+  const [loadPhase, setLoadPhase] = useState<'assets' | 'scene'>('assets')
   const [activeControl, setActiveControl] = useState<string>('侧视图')
 
   const shouldLoad = nearView || inView
@@ -56,8 +57,9 @@ export default function Web3dSceneViewer({
     if (shouldPreloadScene()) {
       setNearView(true)
       setInView(true)
-      void preloadWeb3dScene(sceneId).then(() => setRuntimeReady(true))
     }
+
+    void preloadWeb3dScene(sceneId)
 
     const nearObserver = new IntersectionObserver(
       ([entry]) => setNearView(entry.isIntersecting),
@@ -79,23 +81,11 @@ export default function Web3dSceneViewer({
   }, [sceneId])
 
   useEffect(() => {
-    if (!nearView) return
-
-    let cancelled = false
-    void preloadWeb3dScene(sceneId).then(() => {
-      if (!cancelled) setRuntimeReady(true)
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [nearView, sceneId])
-
-  useEffect(() => {
     if (!shouldLoad) {
       managerRef.current?.destroy()
       managerRef.current = null
       setStatus('idle')
+      setLoadPhase('assets')
       setActiveControl('侧视图')
       return
     }
@@ -104,7 +94,22 @@ export default function Web3dSceneViewer({
     if (!canvas) return
 
     let cancelled = false
+    let renderFrames = 0
     setStatus('loading')
+    setLoadPhase('assets')
+
+    const markReady = () => {
+      if (!cancelled) setStatus('ready')
+    }
+
+    const timeoutId = globalThis.setTimeout(() => {
+      if (!cancelled && managerRef.current) {
+        console.warn('[Web3dSceneViewer] load timeout, showing scene anyway')
+        markReady()
+      } else if (!cancelled) {
+        setStatus('error')
+      }
+    }, LOAD_TIMEOUT_MS)
 
     const startLoad = () => {
       if (cancelled) return
@@ -112,6 +117,7 @@ export default function Web3dSceneViewer({
       Promise.all([loadKingfisherRuntime(), preloadWeb3dModule()])
         .then(async () => {
           if (cancelled) return
+          setLoadPhase('scene')
 
           const { Web3dManager: Manager } = await preloadWeb3dModule()
           const manager = new Manager(canvas, {
@@ -126,10 +132,13 @@ export default function Web3dSceneViewer({
 
           manager.registerWeb3dListener({
             onLoad: () => {
-              if (!cancelled) setStatus('ready')
+              markReady()
+              globalThis.setTimeout(markReady, 1500)
             },
-            onLoadingHide: () => {
-              if (!cancelled) setStatus('ready')
+            onLoadingHide: markReady,
+            onRender: () => {
+              renderFrames += 1
+              if (renderFrames >= 2) markReady()
             },
           })
 
@@ -141,14 +150,15 @@ export default function Web3dSceneViewer({
         })
     }
 
-    scheduleNonBlocking(startLoad, runtimeReady ? 0 : 400)
+    scheduleNonBlocking(startLoad, 80)
 
     return () => {
       cancelled = true
+      globalThis.clearTimeout(timeoutId)
       managerRef.current?.destroy()
       managerRef.current = null
     }
-  }, [shouldLoad, sceneId, limitWidth, limitHeight, runtimeReady])
+  }, [shouldLoad, sceneId, limitWidth, limitHeight])
 
   const triggerSceneEvent = useCallback((event: string) => {
     const manager = managerRef.current
@@ -173,7 +183,7 @@ export default function Web3dSceneViewer({
 
       {showLoading ? (
         <LoadingOverlay
-          label={runtimeReady ? '3D 场景初始化中…' : '3D 资源加载中…'}
+          label={loadPhase === 'scene' ? '3D 场景初始化中…' : '3D 资源加载中…'}
         />
       ) : null}
 
