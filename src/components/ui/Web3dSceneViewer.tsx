@@ -4,10 +4,10 @@ import { preloadWeb3dModule, preloadWeb3dScene } from '../../lib/preloadWeb3d'
 import {
   getPerformanceProfile,
   getWeb3dRenderLimits,
-  isWeChatBrowser,
   scheduleNonBlocking,
 } from '../../lib/wechatEnv'
 import type { Web3dManager } from '../../lib/web3d.js'
+import LoadingOverlay from './LoadingOverlay'
 
 type Web3dSceneViewerProps = {
   sceneId: string
@@ -25,7 +25,6 @@ const SCENE_CONTROLS = [
 ] as const
 
 function shouldPreloadScene() {
-  if (isWeChatBrowser()) return false
   const params = new URLSearchParams(window.location.search)
   return params.has('web3d') || window.location.hash === '#projects'
 }
@@ -40,37 +39,34 @@ export default function Web3dSceneViewer({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const managerRef = useRef<Web3dManager | null>(null)
   const profile = getPerformanceProfile()
-  const wechatMode = profile === 'wechat'
   const { limitWidth, limitHeight } = getWeb3dRenderLimits(profile)
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
   const [inView, setInView] = useState(false)
   const [nearView, setNearView] = useState(false)
   const [runtimeReady, setRuntimeReady] = useState(false)
-  const [userRequested, setUserRequested] = useState(!wechatMode)
   const [activeControl, setActiveControl] = useState<string>('侧视图')
 
-  const shouldLoad = inView && userRequested
+  const shouldLoad = nearView || inView
 
   useEffect(() => {
     const el = hostRef.current
     if (!el) return
 
     if (shouldPreloadScene()) {
+      setNearView(true)
       setInView(true)
       void preloadWeb3dScene(sceneId).then(() => setRuntimeReady(true))
     }
 
-    const nearMargin = wechatMode ? '180% 0px 80% 0px' : '120% 0px 60% 0px'
-
     const nearObserver = new IntersectionObserver(
       ([entry]) => setNearView(entry.isIntersecting),
-      { rootMargin: nearMargin, threshold: 0 },
+      { rootMargin: '150% 0px 80% 0px', threshold: 0 },
     )
 
     const viewObserver = new IntersectionObserver(
       ([entry]) => setInView(entry.isIntersecting),
-      { threshold: wechatMode ? 0.35 : 0.12, rootMargin: wechatMode ? '0px' : '80px' },
+      { threshold: 0.12, rootMargin: '80px' },
     )
 
     nearObserver.observe(el)
@@ -80,7 +76,7 @@ export default function Web3dSceneViewer({
       nearObserver.disconnect()
       viewObserver.disconnect()
     }
-  }, [wechatMode, sceneId])
+  }, [sceneId])
 
   useEffect(() => {
     if (!nearView) return
@@ -145,14 +141,14 @@ export default function Web3dSceneViewer({
         })
     }
 
-    scheduleNonBlocking(startLoad, runtimeReady ? 80 : wechatMode ? 200 : 800)
+    scheduleNonBlocking(startLoad, runtimeReady ? 0 : 400)
 
     return () => {
       cancelled = true
       managerRef.current?.destroy()
       managerRef.current = null
     }
-  }, [shouldLoad, sceneId, limitWidth, limitHeight, wechatMode, runtimeReady])
+  }, [shouldLoad, sceneId, limitWidth, limitHeight, runtimeReady])
 
   const triggerSceneEvent = useCallback((event: string) => {
     const manager = managerRef.current
@@ -162,39 +158,23 @@ export default function Web3dSceneViewer({
     setActiveControl(event)
   }, [status])
 
-  const handleLoadRequest = () => {
-    setUserRequested(true)
-  }
-
-  const showTapToLoad = wechatMode && inView && !userRequested && status === 'idle'
+  const showLoading = shouldLoad && status !== 'ready' && status !== 'error'
 
   return (
-    <div ref={hostRef} className={`relative h-full w-full ${className}`}>
-      {fallbackImage ? (
+    <div ref={hostRef} className={`relative h-full w-full bg-[#070707] ${className}`}>
+      {status === 'error' && fallbackImage ? (
         <img
           src={fallbackImage}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-500"
-          style={{ opacity: status === 'ready' ? 0 : 1 }}
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-40"
         />
       ) : null}
 
-      {showTapToLoad ? (
-        <button
-          type="button"
-          onClick={handleLoadRequest}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-[#070707]/55 px-4 backdrop-blur-[2px] transition hover:bg-[#070707]/65"
-        >
-          <span className="rounded-full border border-[#A855F7]/50 bg-[#A855F7]/15 px-4 py-2 text-xs font-medium text-[#E9D5FF] sm:text-sm">
-            {runtimeReady ? '资源已就绪 · 点击加载 3D' : '正在预加载 3D 资源…'}
-          </span>
-          <span className="max-w-[240px] text-center text-[10px] leading-relaxed text-mist/50 sm:text-[11px]">
-            {runtimeReady
-              ? '引擎已在后台准备完成，点击后立即显示场景'
-              : '滚动到此区域后已在后台下载，请稍候或点击提前加载'}
-          </span>
-        </button>
+      {showLoading ? (
+        <LoadingOverlay
+          label={runtimeReady ? '3D 场景初始化中…' : '3D 资源加载中…'}
+        />
       ) : null}
 
       {demoNotice && status !== 'error' ? (
@@ -228,14 +208,8 @@ export default function Web3dSceneViewer({
         </div>
       ) : null}
 
-      {status === 'loading' ? (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#070707]/85 text-sm text-mist/55">
-          {runtimeReady ? '3D 场景初始化中…' : '3D 资源加载中…'}
-        </div>
-      ) : null}
-
       {status === 'error' ? (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#070707] px-4 text-center text-sm text-mist/55">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#070707]/90 px-4 text-center text-sm text-mist/55">
           3D 场景加载失败，请刷新重试
         </div>
       ) : null}

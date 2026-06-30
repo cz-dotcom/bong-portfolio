@@ -97,6 +97,21 @@ body,
   backface-visibility: hidden;
 }
 
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-top-color: #a855f7;
+  border-radius: 50%;
+  animation: loading-spin 0.75s linear infinite;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* 玻璃质感边框：半透明底 + 高光描边 + 内阴影 */
 .glass-panel {
   position: relative;
